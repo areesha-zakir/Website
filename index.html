@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHeaven | Digital Library</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@300;400;600&family=Prata&display=swap" rel="stylesheet">
+
+    <style>
+        /* 1. Main Category Styling */
+        .cat-btn {
+            background: white;
+            color: #1a252f;
+            border: 1px solid #1a252f;
+            padding: 10px 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Outfit', sans-serif;
+            border-radius: 8px;
+        }
+        .cat-btn.active {
+            background: #d4af37 !important;
+            color: white !important;
+            border-color: #d4af37;
+        }
+
+        /* 2. Sub-Category Theme (Dark Slate & Gold) */
+        .sub-category-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 15px;
+            background: #f4f4f4;
+            border-radius: 12px;
+            border-top: 3px solid #d4af37;
+        }
+        .sub-cat-long {
+            background: #1a252f;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .sub-cat-long:hover, .sub-cat-long.active-sub {
+            background: #d4af37 !important;
+            color: #1a252f !important;
+        }
+    </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body onload="displayBooks()">
+
+    <nav class="glass-nav">
+        <div class="nav-container"><div class="logo-centered">Book<span>Heaven</span></div></div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>BookHeaven</h1>
+            <p class="tagline-new">Where Every Page is a New World</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        
+        <div class="search-section">
+            <div class="search-container-styled">
+                <input type="text" id="searchInput" onkeyup="filterBooks()" placeholder="Search your favorite novel...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <button class="cat-btn" onclick="filterCategory('All', this)">All</button>
+            <button class="cat-btn" onclick="filterCategory('Islamic', this)">Islamic</button>
+            <button class="cat-btn" id="romance-main-btn" onclick="handleRomanceClick(this)">Romantic</button>
+            <button class="cat-btn" onclick="filterCategory('Historical', this)">Historical</button>
+            <button class="cat-btn" onclick="filterCategory('Suspense', this)">Suspense</button>
+        </div>
+
+        <div id="romance-subs" class="sub-category-grid">
+            <button class="sub-cat-long" onclick="filterCategory('Normal Romance', this, true)">Normal Romance</button>
+            <button class="sub-cat-long" onclick="filterCategory('Bold Romance', this, true)">Bold Romance</button>
+            <button class="sub-cat-long" onclick="filterCategory('Extreme Romance', this, true)">Extreme Romance</button>
+        </div>
+
+        <div class="book-grid" id="book-display"></div>
+        
+        <div class="bottom-action-area"><button class="comment-bar-btn" onclick="toggleComments()">Comment</button></div>
+        <div class="final-quote-section"><p class="final-quote-text">"Every page a new story, every story a new emotion."</p></div>
+    </main>
+
+    <footer class="minimal-footer"><p>© 2026 BookHeaven Library</p></footer>
+
+    <div id="comment-panel" style="display: none; background: #fff; padding: 20px; margin: 20px auto; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-family: 'Outfit', sans-serif;">
+        <h3 style="border-bottom: 2px solid #d4af37; padding-bottom: 10px;">Readers' Discussion</h3>
+        <div id="comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 8px;">
+            <p style="color: #888;">No comments yet. Be the first to share your thoughts!</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="commentInput" placeholder="Write a comment..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+            <button onclick="postComment()" style="background: #1a252f; color: #d4af37; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">Post</button>
+        </div>
+    </div>
+
+<script>
+    let allBooks = [];
+
+    /* --- SECTION: INITIAL DATA LOAD --- */
+    function displayBooks() {
+        allBooks = JSON.parse(localStorage.getItem('myBooks')) || [];
+        const allBtn = document.querySelector('.cat-btn');
+        filterCategory('All', allBtn);
+    }
+
+    /* --- SECTION: SEARCH LOGIC --- */
+    function filterBooks() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        renderBooks(allBooks.filter(b => b.title.toLowerCase().includes(term) || b.writer.toLowerCase().includes(term)));
+    }
+
+    /* --- SECTION: ROMANCE MENU HANDLER --- */
+    function handleRomanceClick(btn) {
+        const subMenu = document.getElementById('romance-subs');
+        const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
+        subMenu.style.display = isHidden ? 'grid' : 'none';
+        filterCategory('Romance', btn, false);
+    }
+
+    /* --- SECTION: SMART CATEGORY FILTER --- */
+    function filterCategory(cat, btn, isSub = false) {
+        const filtered = (cat === 'All') ? allBooks : allBooks.filter(b => {
+            if (!b.category) return false;
+            const bookCategories = b.category.split(',').map(item => item.trim().toLowerCase());
+            const targetCategory = cat.toLowerCase();
+            if (targetCategory === 'romance') {
+                return bookCategories.some(tag => tag.includes('romance'));
+            }
+            return bookCategories.includes(targetCategory);
+        });
+        
+        renderBooks(filtered);
+        setActiveButton(btn, isSub);
+
+        if (!isSub && cat !== 'Romance' && cat !== 'All') {
+            const romanceMenu = document.getElementById('romance-subs');
+            if(romanceMenu) romanceMenu.style.display = 'none';
+        }
+    }
+
+    /* --- SECTION: UI BUTTON HIGHLIGHT --- */
+    function setActiveButton(btn, isSub) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.sub-cat-long').forEach(b => b.classList.remove('active-sub'));
+        if (btn) {
+            if (isSub) {
+                btn.classList.add('active-sub');
+                const romBtn = document.getElementById('romance-main-btn');
+                if(romBtn) romBtn.classList.add('active');
+            } else {
+                btn.classList.add('active');
+            }
+        }
+    }
+
+    /* --- SECTION: BOOK RENDERING --- */
+    function renderBooks(data) {
+        const displayArea = document.getElementById('book-display');
+        if (data.length === 0) {
+            displayArea.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #777; padding: 40px;">No novels found here yet.</p>`;
+            return;
+        }
+        displayArea.innerHTML = data.map(book => `
+            <div class="pro-card">
+                <div class="img-container" onclick="window.open('${book.link}', '_blank')">
+                    <img src="${book.image}">
+                </div>
+                <div class="card-info">
+                    <h3 class="novel-name">${book.title}</h3>
+                    <p class="writer-name">By ${book.writer}</p>
+                    <button class="download-btn" onclick="window.open('${book.link}', '_blank')">Download PDF</button>
+                </div>
+            </div>`).join('');
+    }
+
+    /* --- SECTION: COMMENT BOX LOGIC --- */
+    function toggleComments() {
+        const panel = document.getElementById('comment-panel');
+        const isHidden = panel.style.display === 'none';
+        panel.style.display = isHidden ? 'block' : 'none';
+        
+        if (isHidden) {
+            panel.scrollIntoView({ behavior: 'smooth' });
+            loadComments();
+        }
+    }
+
+    function postComment() {
+        const input = document.getElementById('commentInput');
+        const text = input.value.trim();
+        if (text === "") return;
+        let comments = JSON.parse(localStorage.getItem('bookHeavenComments')) || [];
+        const newComment = {
+            text: text,
+            date: new Date().toLocaleString()
+        };
+        comments.push(newComment);
+        localStorage.setItem('bookHeavenComments', JSON.stringify(comments));
+        input.value = "";
+        loadComments();
+    }
+
+    function loadComments() {
+        const list = document.getElementById('comments-list');
+        const comments = JSON.parse(localStorage.getItem('bookHeavenComments')) || [];
+        if (comments.length === 0) {
+            list.innerHTML = `<p style="color: #888;">No comments yet. Be the first to share your thoughts!</p>`;
+            return;
+        }
+        list.innerHTML = comments.map(c => `
+            <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
+                <p style="margin: 0; color: #1a252f; font-weight: 400;">${c.text}</p>
+                <small style="color: #999; font-size: 11px;">${c.date}</small>
+            </div>
+        `).reverse().join('');
+    }
+</script>
+</body>
+</html>
