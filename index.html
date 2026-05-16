@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@300;400;600&family=Prata&display=swap" rel="stylesheet">
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
         /* Aapki Original Styling */
         .cat-btn {
@@ -55,7 +52,7 @@
             color: #1a252f !important;
         }
 
-        /* MOBILE RESPONSIVE FIX (Desktop aur Mobile dono pe friendly dikhega) */
+        /* MOBILE RESPONSIVE FIX */
         @media (max-width: 768px) {
             .category-wrapper {
                 display: flex;
@@ -138,148 +135,152 @@
         </div>
     </div>
 
-<script>
-    // FIREBASE CONFIG INTEGRATED (Aapka bheja hua data)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDEh-cYbortKL9BxCAO9WyXMH3R7r3oYvA",
-        authDomain: "bookheaven-89ba8.firebaseapp.com",
-        projectId: "bookheaven-89ba8",
-        storageBucket: "bookheaven-89ba8.firebasestorage.app",
-        messagingSenderId: "187359613339",
-        appId: "1:187359613339:web:9feed4b42cca519529913e",
-        databaseURL: "https://bookheaven-89ba8-default-rtdb.firebaseio.com/" 
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let allBooks = [];
-
-    function initApp() {
-        // Firebase se books load karna
-        db.ref('books').on('value', (snapshot) => {
-            const data = snapshot.val();
-            allBooks = data ? Object.values(data) : [];
-            const allBtn = document.querySelector('.cat-btn');
-            filterCategory('All', allBtn);
-        });
-        // Firebase se comments load karna
-        loadComments();
-    }
-
-    /* --- Logic Same As Your Original --- */
-    function filterBooks() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        renderBooks(allBooks.filter(b => b.title.toLowerCase().includes(term) || b.writer.toLowerCase().includes(term)));
-    }
-
-    function handleRomanceClick(btn) {
-        const subMenu = document.getElementById('romance-subs');
-        const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
-        subMenu.style.display = isHidden ? 'grid' : 'none';
-        filterCategory('Romance', btn, false);
-    }
-
-    function filterCategory(cat, btn, isSub = false) {
-        const filtered = (cat === 'All') ? allBooks : allBooks.filter(b => {
-            if (!b.category) return false;
-            const bookCategories = b.category.split(',').map(item => item.trim().toLowerCase());
-            const targetCategory = cat.toLowerCase();
-            if (targetCategory === 'romance') {
-                return bookCategories.some(tag => tag.includes('romance'));
-            }
-            return bookCategories.includes(targetCategory);
-        });
-        
-        renderBooks(filtered);
-        setActiveButton(btn, isSub);
-
-        if (!isSub && cat !== 'Romance' && cat !== 'All') {
-            const romanceMenu = document.getElementById('romance-subs');
-            if(romanceMenu) romanceMenu.style.display = 'none';
-        }
-    }
-
-    function setActiveButton(btn, isSub) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.sub-cat-long').forEach(b => b.classList.remove('active-sub'));
-        if (btn) {
-            if (isSub) {
-                btn.classList.add('active-sub');
-                const romBtn = document.getElementById('romance-main-btn');
-                if(romBtn) romBtn.classList.add('active');
-            } else {
-                btn.classList.add('active');
-            }
-        }
-    }
-
-    function renderBooks(data) {
-        const displayArea = document.getElementById('book-display');
-        if (data.length === 0) {
-            displayArea.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #777; padding: 40px;">No novels found here yet.</p>`;
-            return;
-        }
-        displayArea.innerHTML = data.map(book => `
-            <div class="pro-card">
-                <div class="img-container" onclick="window.open('${book.link}', '_blank')">
-                    <img src="${book.image}">
-                </div>
-                <div class="card-info">
-                    <h3 class="novel-name">${book.title}</h3>
-                    <p class="writer-name">By ${book.writer}</p>
-                    <button class="download-btn" onclick="window.open('${book.link}', '_blank')">Download PDF</button>
-                </div>
-            </div>`).join('');
-    }
-
-    function toggleComments() {
-        const panel = document.getElementById('comment-panel');
-        const isHidden = panel.style.display === 'none';
-        panel.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) panel.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function postComment() {
-        const input = document.getElementById('commentInput');
-        const text = input.value.trim();
-        if (text === "") return;
-
-        const newComment = {
-            text: text,
-            date: new Date().toLocaleString()
-        };
-
-        // Firebase Cloud mein save
-        db.ref('comments').push(newComment);
-        input.value = "";
-    }
-
-    function loadComments() {
-        db.ref('comments').on('value', (snapshot) => {
-            const list = document.getElementById('comments-list');
-            const data = snapshot.val();
-            const comments = data ? Object.values(data) : [];
-
-            if (comments.length === 0) {
-                list.innerHTML = `<p style="color: #888;">No comments yet. Share your thoughts!</p>`;
-                return;
-            }
-            list.innerHTML = comments.map(c => `
-                <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
-                    <p style="margin: 0; color: #1a252f; font-weight: 400;">${c.text}</p>
-                    <small style="color: #999; font-size: 11px;">${c.date}</small>
-                </div>
-            `).reverse().join('');
-        });
-    }
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-</body>
-</html>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEh-cYBortKL9BxCA09WyXMH3R7r3",
+            authDomain: "bookheaven-89ba8.firebaseapp.com",
+            databaseURL: "https://bookheaven-89ba8-default-rtdb.firebaseio.com",
+            projectId: "bookheaven-89ba8",
+            storageBucket: "bookheaven-89ba8.appspot.com",
+            messagingSenderId: "187359613339",
+            appId: "1:187359613339:web:9feed4b42cca519529913e"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let allBooks = [];
+
+        function initApp() {
+            // Firebase se books load karna
+            db.ref('books').on('value', (snapshot) => {
+                const data = snapshot.val();
+                allBooks = data ? Object.values(data) : [];
+                const allBtn = document.querySelector('.cat-btn');
+                filterCategory('All', allBtn);
+            });
+            // Firebase se comments load karna
+            loadComments();
+        }
+
+        /* --- Application Logic --- */
+        function filterBooks() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            renderBooks(allBooks.filter(b => b.title.toLowerCase().includes(term) || b.writer.toLowerCase().includes(term)));
+        }
+
+        fn = handleRomanceClick(btn) {
+            const subMenu = document.getElementById('romance-subs');
+            const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
+            subMenu.style.display = isHidden ? 'grid' : 'none';
+            filterCategory('Romance', btn, false);
+        }
+
+        function handleRomanceClick(btn) {
+            const subMenu = document.getElementById('romance-subs');
+            const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
+            subMenu.style.display = isHidden ? 'grid' : 'none';
+            filterCategory('Romance', btn, false);
+        }
+
+        function filterCategory(cat, btn, isSub = false) {
+            const filtered = (cat === 'All') ? allBooks : allBooks.filter(b => {
+                if (!b.category) return false;
+                const bookCategories = b.category.split(',').map(item => item.trim().toLowerCase());
+                const targetCategory = cat.toLowerCase();
+                if (targetCategory === 'romance') {
+                    return bookCategories.some(tag => tag.includes('romance'));
+                }
+                return bookCategories.includes(targetCategory);
+            });
+            
+            renderBooks(filtered);
+            setActiveButton(btn, isSub);
+
+            if (!isSub && cat !== 'Romance' && cat !== 'All') {
+                const romanceMenu = document.getElementById('romance-subs');
+                if(romanceMenu) romanceMenu.style.display = 'none';
+            }
+        }
+
+        function setActiveButton(btn, isSub) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sub-cat-long').forEach(b => b.classList.remove('active-sub'));
+            if (btn) {
+                if (isSub) {
+                    btn.classList.add('active-sub');
+                    const romBtn = document.getElementById('romance-main-btn');
+                    if(romBtn) romBtn.classList.add('active');
+                } else {
+                    btn.classList.add('active');
+                }
+            }
+        }
+
+        function renderBooks(data) {
+            const displayArea = document.getElementById('book-display');
+            if (data.length === 0) {
+                displayArea.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #777; padding: 40px;">No novels found here yet.</p>`;
+                return;
+            }
+            displayArea.innerHTML = data.map(book => `
+                <div class="pro-card">
+                    <div class="img-container" onclick="window.open('${book.link}', '_blank')">
+                        <img src="${book.image}">
+                    </div>
+                    <div class="card-info">
+                        <h3 class="novel-name">${book.title}</h3>
+                        <p class="writer-name">By ${book.writer}</p>
+                        <button class="download-btn" onclick="window.open('${book.link}', '_blank')">Download PDF</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function toggleComments() {
+            const panel = document.getElementById('comment-panel');
+            const isHidden = panel.style.display === 'none';
+            panel.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) panel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function postComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (text === "") return;
+
+            const newComment = {
+                text: text,
+                date: new Date().toLocaleString()
+            };
+
+            // Firebase Cloud mein save
+            db.ref('comments').push(newComment);
+            input.value = "";
+        }
+
+        function loadComments() {
+            db.ref('comments').on('value', (snapshot) => {
+                const list = document.getElementById('comments-list');
+                const data = snapshot.val();
+                const comments = data ? Object.values(data) : [];
+
+                if (comments.length === 0) {
+                    list.innerHTML = `<p style="color: #888;">No comments yet. Share your thoughts!</p>`;
+                    return;
+                }
+                list.innerHTML = comments.map(c => `
+                    <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
+                        <p style="margin: 0; color: #1a252f; font-weight: 400;">${c.text}</p>
+                        <small style="color: #999; font-size: 11px;">${c.date}</small>
+                    </div>
+                `).reverse().join('');
+            });
+        }
+    </script>
 </body>
 </html>
