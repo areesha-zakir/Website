@@ -174,19 +174,12 @@
             renderBooks(allBooks.filter(b => b.title.toLowerCase().includes(term) || b.writer.toLowerCase().includes(term)));
         }
 
-        fn = handleRomanceClick(btn) {
-            const subMenu = document.getElementById('romance-subs');
-            const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
-            subMenu.style.display = isHidden ? 'grid' : 'none';
-            filterCategory('Romance', btn, false);
-        }
-
         function handleRomanceClick(btn) {
-            const subMenu = document.getElementById('romance-subs');
-            const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
-            subMenu.style.display = isHidden ? 'grid' : 'none';
-            filterCategory('Romance', btn, false);
-        }
+    const subMenu = document.getElementById('romance-subs');
+    const isHidden = subMenu.style.display === 'none' || subMenu.style.display === '';
+    subMenu.style.display = isHidden ? 'grid' : 'none';
+    filterCategory('Romance', btn, false);
+}
 
         function filterCategory(cat, btn, isSub = false) {
             const filtered = (cat === 'All') ? allBooks : allBooks.filter(b => {
